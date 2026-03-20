@@ -1,65 +1,74 @@
+import Link from "next/link";
 import Image from "next/image";
+import { KOREA_TEAMS } from "@/data/teams";
+import { Team } from "@/types/football";
 
-export default function Home() {
+const CATEGORY_LABEL: Record<string, string> = {
+  senior: "성인",
+  u23: "U-23",
+  u20: "U-20",
+  u17: "U-17",
+};
+
+function TeamCard({ team }: { team: Team }) {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <Link href={`/teams/${team.id}`}>
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 hover:shadow-md hover:border-blue-200 transition-all group cursor-pointer">
+        <div className="flex items-center gap-4">
+          <div className="relative w-14 h-14 flex-shrink-0">
+            <Image src={team.logo} alt={team.nameKo} fill className="object-contain" unoptimized />
+          </div>
+          <div>
+            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full mb-1 inline-block ${
+              team.gender === "male" ? "bg-blue-50 text-blue-600" : "bg-pink-50 text-pink-600"
+            }`}>
+              {team.gender === "male" ? "남자" : "여자"} · {CATEGORY_LABEL[team.category]}
+            </span>
+            <h3 className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors text-sm leading-tight">
+              {team.nameKo}
+            </h3>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </div>
+    </Link>
+  );
+}
+
+export default function HomePage() {
+  const maleTeams = KOREA_TEAMS.filter((t) => t.gender === "male");
+  const femaleTeams = KOREA_TEAMS.filter((t) => t.gender === "female");
+
+  return (
+    <main className="min-h-screen bg-gray-50">
+      <div className="bg-[#C41E3A] text-white py-12 px-4">
+        <div className="max-w-3xl mx-auto text-center">
+          <p className="text-red-200 text-sm font-medium mb-2">대한민국 축구</p>
+          <h1 className="text-3xl font-extrabold mb-1">🇰🇷 국가대표팀</h1>
+          <p className="text-red-100 text-sm">선수단 · 일정 · 결과</p>
         </div>
-      </main>
-    </div>
+      </div>
+
+      <div className="max-w-3xl mx-auto px-4 py-10 space-y-10">
+        <section>
+          <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <span className="w-1 h-5 bg-blue-500 rounded-full inline-block" />
+            남자 대표팀
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {maleTeams.map((team) => <TeamCard key={team.id} team={team} />)}
+          </div>
+        </section>
+
+        <section>
+          <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <span className="w-1 h-5 bg-pink-500 rounded-full inline-block" />
+            여자 대표팀
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {femaleTeams.map((team) => <TeamCard key={team.id} team={team} />)}
+          </div>
+        </section>
+      </div>
+    </main>
   );
 }
