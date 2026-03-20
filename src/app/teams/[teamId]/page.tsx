@@ -147,9 +147,9 @@ export default async function TeamPage({ params }: { params: Promise<{ teamId: s
   if (!team) notFound();
 
   const [{ players, coaches }, fixtures, highlights] = await Promise.all([
-    getSquad(id),
-    getFixtures(id, 2025),
-    getHighlights(team.highlightQuery, 12),
+    getSquad(id).catch(() => ({ players: [], coaches: [] })),
+    getFixtures(id, 2025).catch(() => []),
+    getHighlights(team.highlightQuery, 12).catch(() => []),
   ]);
 
   // 최근 완료 경기 5개 (최신순)

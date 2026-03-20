@@ -27,7 +27,12 @@ async function apiFetch(path: string) {
     next: { revalidate: 3600 }, // 1시간 캐시
   });
   if (!res.ok) throw new Error(`API error: ${res.status}`);
-  return res.json();
+  const json = await res.json();
+  // 계정 정지 / 키 오류 등 응답 레벨 에러 감지
+  if (json?.errors && Object.keys(json.errors).length > 0) {
+    throw new Error(`API response error: ${JSON.stringify(json.errors)}`);
+  }
+  return json;
 }
 
 // 팀 선수단 조회

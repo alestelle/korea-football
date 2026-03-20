@@ -172,8 +172,10 @@ export default async function HomePage() {
               className="drop-shadow-lg"
             />
           </div>
-          <h1 className="text-3xl font-extrabold mb-1">대한민국 축구 대표팀</h1>
-          <p className="text-red-100 text-sm">선수단 · 일정 · 결과</p>
+          <h1 className="text-3xl font-extrabold mb-3">대한민국 축구 대표팀</h1>
+          <span className="inline-block text-xs font-semibold bg-white/20 text-white px-3 py-1 rounded-full tracking-wide">
+            스포츠기획 프로토타입
+          </span>
         </div>
       </div>
 
