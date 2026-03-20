@@ -98,7 +98,7 @@ export async function getPlayer(playerId: number, teamId: number): Promise<Playe
 }
 
 // 경기 일정/결과 조회
-export async function getFixtures(teamId: number, season: number = 2024): Promise<Match[]> {
+export async function getFixtures(teamId: number, season: number = 2025): Promise<Match[]> {
   const data = await apiFetch(`/fixtures?team=${teamId}&season=${season}`);
   return (data.response ?? []).map(mapFixture);
 }

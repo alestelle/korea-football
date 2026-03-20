@@ -132,7 +132,7 @@ export default async function HomePage() {
   // 모든 팀의 경기 일정 + 하이라이트를 병렬로 조회
   const [fixturesPerTeam, highlightsPerTeam] = await Promise.all([
     Promise.all(
-      KOREA_TEAMS.map((team) => getFixtures(team.id, 2024).catch(() => [] as Match[]))
+      KOREA_TEAMS.map((team) => getFixtures(team.id, 2025).catch(() => [] as Match[]))
     ),
     Promise.all(
       KOREA_TEAMS.map((team) => getHighlights(team.highlightQuery, 2).catch(() => [] as Highlight[]))

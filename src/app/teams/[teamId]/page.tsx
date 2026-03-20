@@ -148,7 +148,7 @@ export default async function TeamPage({ params }: { params: Promise<{ teamId: s
 
   const [{ players, coaches }, fixtures, highlights] = await Promise.all([
     getSquad(id),
-    getFixtures(id, 2024),
+    getFixtures(id, 2025),
     getHighlights(team.highlightQuery, 12),
   ]);
 
