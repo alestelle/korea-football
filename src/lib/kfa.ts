@@ -260,7 +260,7 @@ function toMatch(raw: KFAMatchRaw, teamId: number): import("@/types/football").M
     id: 0,
     name: raw.opponent,
     nameKo: raw.opponent,
-    logo: `https://img.kfa.or.kr/nation_flag/`,
+    logo: "",
     winner: raw.korWon === null ? null : !raw.korWon,
   };
 

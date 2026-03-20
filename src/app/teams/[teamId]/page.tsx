@@ -10,6 +10,22 @@ export const dynamic = "force-dynamic";
 
 const FINISHED = ["FT", "AET", "PEN"];
 
+function TeamLogo({ src, alt, size = 36 }: { src: string; alt: string; size?: number }) {
+  if (!src) {
+    return (
+      <div
+        style={{ width: size, height: size }}
+        className="rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center flex-shrink-0"
+      >
+        <svg className="w-4 h-4 text-gray-300" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
+        </svg>
+      </div>
+    );
+  }
+  return <Image src={src} alt={alt} width={size} height={size} unoptimized />;
+}
+
 function MatchCard({ match, teamId }: { match: Match; teamId: number }) {
   const isHome = match.homeTeam.id === teamId;
   const isFinished = FINISHED.includes(match.status.short);
@@ -42,7 +58,7 @@ function MatchCard({ match, teamId }: { match: Match; teamId: number }) {
         <div className="flex items-center justify-between px-4 py-4 gap-2">
           {/* 홈팀 */}
           <div className="flex flex-col items-center gap-1.5 flex-1">
-            <Image src={match.homeTeam.logo} alt={match.homeTeam.name} width={36} height={36} unoptimized />
+            <TeamLogo src={match.homeTeam.logo} alt={match.homeTeam.name} />
             <span className={`text-xs font-medium text-center leading-tight ${match.homeTeam.id === teamId ? "text-blue-700 font-bold" : "text-gray-700"}`}>
               {match.homeTeam.nameKo ?? match.homeTeam.name}
             </span>
@@ -74,7 +90,7 @@ function MatchCard({ match, teamId }: { match: Match; teamId: number }) {
 
           {/* 원정팀 */}
           <div className="flex flex-col items-center gap-1.5 flex-1">
-            <Image src={match.awayTeam.logo} alt={match.awayTeam.name} width={36} height={36} unoptimized />
+            <TeamLogo src={match.awayTeam.logo} alt={match.awayTeam.name} />
             <span className={`text-xs font-medium text-center leading-tight ${match.awayTeam.id === teamId ? "text-blue-700 font-bold" : "text-gray-700"}`}>
               {match.awayTeam.nameKo ?? match.awayTeam.name}
             </span>

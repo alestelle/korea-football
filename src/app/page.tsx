@@ -33,7 +33,11 @@ function MatchRow({ match, teamId, label }: { match: Match | null; teamId: numbe
   return (
     <Link href={`/matches/${match.id}`} className="flex items-center gap-2 text-xs py-1.5 hover:bg-gray-50 rounded-lg px-1 -mx-1 transition-colors group/row">
       <span className="w-8 flex-shrink-0 font-medium text-gray-500">{label}</span>
-      <Image src={opponent.logo} alt={opponent.name} width={16} height={16} unoptimized className="flex-shrink-0" />
+      {opponent.logo ? (
+        <Image src={opponent.logo} alt={opponent.name} width={16} height={16} unoptimized className="flex-shrink-0" />
+      ) : (
+        <div className="w-4 h-4 rounded-full bg-gray-200 flex-shrink-0" />
+      )}
       <span className="text-gray-600 truncate flex-1 group-hover/row:text-blue-600">
         {isHome ? "홈" : "원정"} · {opponent.name}
       </span>
