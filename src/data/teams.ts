@@ -10,6 +10,8 @@ export const KOREA_TEAMS: Team[] = [
     gender: "male",
     logo: "https://media.api-sports.io/football/teams/10177.png",
     highlightQuery: "한국 남자 축구 A대표팀 경기 하이라이트",
+    kfaAct: "nt_man",
+    kfaTeamKeyword: "남자 국가대표팀",
   },
   {
     id: 10177,
@@ -20,6 +22,8 @@ export const KOREA_TEAMS: Team[] = [
     gender: "male",
     logo: "https://media.api-sports.io/football/teams/10177.png",
     highlightQuery: "대한민국 U-23 남자 축구 하이라이트 AFC",
+    kfaAct: "mu_23",
+    kfaTeamKeyword: "남자 U-23 대표팀",
   },
   {
     id: 10291,
@@ -30,6 +34,8 @@ export const KOREA_TEAMS: Team[] = [
     gender: "male",
     logo: "https://media.api-sports.io/football/teams/10177.png",
     highlightQuery: "대한민국 U-20 남자 축구 하이라이트 FIFA",
+    kfaAct: "mu_20",
+    kfaTeamKeyword: "남자 U-20 대표팀",
   },
   {
     id: 12512,
@@ -40,6 +46,8 @@ export const KOREA_TEAMS: Team[] = [
     gender: "male",
     logo: "https://media.api-sports.io/football/teams/10177.png",
     highlightQuery: "대한민국 U-17 남자 축구 하이라이트",
+    kfaAct: "mu_17",
+    kfaTeamKeyword: "남자 U-17 대표팀",
   },
   {
     id: 1728,
@@ -50,6 +58,8 @@ export const KOREA_TEAMS: Team[] = [
     gender: "female",
     logo: "https://media.api-sports.io/football/teams/10177.png",
     highlightQuery: "대한민국 여자 축구 A대표팀 경기 하이라이트",
+    kfaAct: "nt_woman",
+    kfaTeamKeyword: "여자 국가대표팀",
   },
   {
     id: 19087,
@@ -60,6 +70,8 @@ export const KOREA_TEAMS: Team[] = [
     gender: "female",
     logo: "https://media.api-sports.io/football/teams/10177.png",
     highlightQuery: "대한민국 U-20 여자 축구 하이라이트",
+    kfaAct: "wu_20",
+    kfaTeamKeyword: "여자 U-20 대표팀",
   },
 ];
 

@@ -7,6 +7,8 @@ export interface Team {
   gender: "male" | "female";
   logo: string;
   highlightQuery: string;
+  kfaAct: string;           // KFA 선수단 페이지 act 파라미터
+  kfaTeamKeyword: string;   // KFA 일정 페이지 팀 이름 키워드
 }
 
 export interface Player {

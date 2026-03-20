@@ -2,7 +2,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { KOREA_TEAMS } from "@/data/teams";
 import { Team, Match } from "@/types/football";
-import { getFixtures, getHighlights, Highlight } from "@/lib/api";
+import { getHighlights, Highlight } from "@/lib/api";
+import { getKFAFixtures } from "@/lib/kfa";
 
 const CATEGORY_LABEL: Record<string, string> = {
   senior: "성인",
@@ -132,7 +133,7 @@ export default async function HomePage() {
   // 모든 팀의 경기 일정 + 하이라이트를 병렬로 조회
   const [fixturesPerTeam, highlightsPerTeam] = await Promise.all([
     Promise.all(
-      KOREA_TEAMS.map((team) => getFixtures(team.id, 2025).catch(() => [] as Match[]))
+      KOREA_TEAMS.map((team) => getKFAFixtures(team.id, team.kfaTeamKeyword).catch(() => [] as Match[]))
     ),
     Promise.all(
       KOREA_TEAMS.map((team) => getHighlights(team.highlightQuery, 2).catch(() => [] as Highlight[]))

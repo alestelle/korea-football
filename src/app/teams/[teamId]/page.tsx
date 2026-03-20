@@ -1,9 +1,10 @@
-import { getSquad, getFixtures, getHighlights } from "@/lib/api";
+import { getHighlights } from "@/lib/api";
+import { getKFAFixtures, getKFASquad, KFAPlayer } from "@/lib/kfa";
 import { getTeamById } from "@/data/teams";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { Player, Coach, Match } from "@/types/football";
+import { Match } from "@/types/football";
 
 export const dynamic = "force-dynamic";
 
@@ -97,8 +98,8 @@ function MatchCard({ match, teamId }: { match: Match; teamId: number }) {
   );
 }
 
-function PlayerCard({ player }: { player: Player }) {
-  const displayName = player.nameKo ?? player.name;
+function PlayerCard({ player }: { player: KFAPlayer }) {
+  const displayName = player.nameKo;
   const naverUrl = `https://search.naver.com/search.naver?query=${encodeURIComponent("축구선수 " + displayName)}`;
 
   return (
@@ -115,28 +116,13 @@ function PlayerCard({ player }: { player: Player }) {
           <p className="font-semibold text-sm text-gray-900 group-hover:text-blue-600 transition-colors truncate">
             {displayName}
           </p>
-          <p className="text-xs text-gray-400">{player.positionKo} {player.number ? `· #${player.number}` : ""}</p>
+          <p className="text-xs text-gray-400">
+            {player.positionKo}
+            {player.club ? ` · ${player.club}` : ""}
+          </p>
         </div>
       </div>
     </a>
-  );
-}
-
-function CoachCard({ coach }: { coach: Coach }) {
-  return (
-    <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-100">
-      <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-100 flex-shrink-0">
-        {coach.photo ? (
-          <Image src={coach.photo} alt={coach.nameKo ?? coach.name} fill className="object-cover" unoptimized />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">?</div>
-        )}
-      </div>
-      <div>
-        <p className="font-semibold text-sm text-gray-900">{coach.nameKo ?? coach.name}</p>
-        <p className="text-xs text-gray-400">{coach.roleKo} · {coach.nationalityKo}</p>
-      </div>
-    </div>
   );
 }
 
@@ -146,9 +132,9 @@ export default async function TeamPage({ params }: { params: Promise<{ teamId: s
   const team = getTeamById(id);
   if (!team) notFound();
 
-  const [{ players, coaches }, fixtures, highlights] = await Promise.all([
-    getSquad(id).catch(() => ({ players: [], coaches: [] })),
-    getFixtures(id, 2025).catch(() => []),
+  const [players, fixtures, highlights] = await Promise.all([
+    getKFASquad(team.kfaAct).catch(() => [] as KFAPlayer[]),
+    getKFAFixtures(id, team.kfaTeamKeyword).catch(() => [] as Match[]),
     getHighlights(team.highlightQuery, 12).catch(() => []),
   ]);
 
@@ -163,7 +149,7 @@ export default async function TeamPage({ params }: { params: Promise<{ teamId: s
     .filter((m) => !FINISHED.includes(m.status.short))
     .sort((a, b) => a.timestamp - b.timestamp);
 
-  const byPosition: Record<string, Player[]> = {};
+  const byPosition: Record<string, KFAPlayer[]> = {};
   players.forEach((p) => {
     const pos = p.positionKo || "기타";
     if (!byPosition[pos]) byPosition[pos] = [];
@@ -182,7 +168,7 @@ export default async function TeamPage({ params }: { params: Promise<{ teamId: s
             <Image src={team.logo} alt={team.nameKo} width={56} height={56} unoptimized />
             <div>
               <h1 className="text-xl font-extrabold">{team.nameKo}</h1>
-              <p className="text-red-200 text-sm">{players.length}명 · {coaches.length}명 코칭스태프</p>
+              <p className="text-red-200 text-sm">{players.length}명</p>
             </div>
           </div>
         </div>
@@ -276,26 +262,19 @@ export default async function TeamPage({ params }: { params: Promise<{ teamId: s
             선수단 ({players.length}명)
           </h2>
 
-          {/* 코칭스태프 */}
-          {coaches.length > 0 && (
-            <div className="mb-5">
-              <h3 className="text-xs font-semibold text-gray-500 uppercase mb-2">코칭스태프</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {coaches.map((c) => <CoachCard key={c.id} coach={c} />)}
-              </div>
-            </div>
-          )}
-
-          {/* 포지션별 선수 */}
-          {posOrder.map((pos) =>
-            byPosition[pos] ? (
-              <div key={pos} className="mb-4">
-                <h3 className="text-xs font-semibold text-gray-500 uppercase mb-2">{pos}</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {byPosition[pos].map((p) => <PlayerCard key={p.id} player={p} />)}
+          {players.length === 0 ? (
+            <p className="text-sm text-gray-400 py-4 text-center">선수단 정보가 없습니다</p>
+          ) : (
+            posOrder.map((pos) =>
+              byPosition[pos] ? (
+                <div key={pos} className="mb-4">
+                  <h3 className="text-xs font-semibold text-gray-500 uppercase mb-2">{pos}</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {byPosition[pos].map((p) => <PlayerCard key={p.id} player={p} />)}
+                  </div>
                 </div>
-              </div>
-            ) : null
+              ) : null
+            )
           )}
         </section>
 
