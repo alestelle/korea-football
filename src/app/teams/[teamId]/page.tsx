@@ -160,7 +160,7 @@ function MatchCard({
 
 function PlayerCard({ player }: { player: KFAPlayer }) {
   const naverUrl = `https://search.naver.com/search.naver?query=${encodeURIComponent(player.nameKo + " 축구선수")}`;
-  const instaUrl = `https://www.google.com/search?q=${encodeURIComponent(player.nameKo + " 축구선수 instagram")}`;
+  const instaUrl = `https://www.instagram.com/explore/search/keyword/?q=${encodeURIComponent(player.nameKo)}`;
 
   return (
     <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-100 hover:border-blue-200 hover:shadow-sm transition-all">
