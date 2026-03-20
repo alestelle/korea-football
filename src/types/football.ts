@@ -6,6 +6,7 @@ export interface Team {
   category: "senior" | "u23" | "u20" | "u17";
   gender: "male" | "female";
   logo: string;
+  highlightQuery: string;
 }
 
 export interface Player {

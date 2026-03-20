@@ -1,4 +1,4 @@
-import { getSquad, getFixtures } from "@/lib/api";
+import { getSquad, getFixtures, getHighlights, Highlight } from "@/lib/api";
 import { getTeamById } from "@/data/teams";
 import { notFound } from "next/navigation";
 import Image from "next/image";
@@ -90,9 +90,10 @@ export default async function TeamPage({ params }: { params: Promise<{ teamId: s
   const team = getTeamById(id);
   if (!team) notFound();
 
-  const [{ players, coaches }, fixtures] = await Promise.all([
+  const [{ players, coaches }, fixtures, highlights] = await Promise.all([
     getSquad(id),
     getFixtures(id, 2024),
+    getHighlights(team.highlightQuery, 12),
   ]);
 
   const upcoming = fixtures
@@ -172,6 +173,45 @@ export default async function TeamPage({ params }: { params: Promise<{ teamId: s
             <h2 className="text-base font-bold text-gray-800 mb-3">최근 경기 결과</h2>
             <div className="space-y-2">
               {results.map((m) => <MatchRow key={m.id} match={m} teamId={id} />)}
+            </div>
+          </section>
+        )}
+
+        {/* 하이라이트 영상 */}
+        {highlights.length > 0 && (
+          <section>
+            <h2 className="text-base font-bold text-gray-800 mb-3">🎬 하이라이트 영상</h2>
+            <div className="grid grid-cols-2 gap-3">
+              {highlights.map((h) => (
+                <a
+                  key={h.id}
+                  href={h.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group rounded-xl overflow-hidden border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all bg-white"
+                >
+                  <div className="relative w-full aspect-video bg-gray-100 overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={h.thumb}
+                      alt={h.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-colors">
+                      <div className="w-10 h-10 rounded-full bg-red-600 flex items-center justify-center shadow-lg">
+                        <svg className="w-4 h-4 text-white ml-0.5" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-2">
+                    <p className="text-xs text-gray-700 line-clamp-2 leading-tight group-hover:text-blue-600 transition-colors">
+                      {h.title}
+                    </p>
+                  </div>
+                </a>
+              ))}
             </div>
           </section>
         )}

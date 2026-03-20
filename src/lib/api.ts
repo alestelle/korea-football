@@ -1,4 +1,11 @@
 import { Coach, Match, MatchDetail, Player } from "@/types/football";
+
+export interface Highlight {
+  id: string;
+  title: string;
+  thumb: string;
+  url: string;
+}
 import {
   translateLeague,
   translateNationality,
@@ -114,6 +121,54 @@ export async function getFixture(fixtureId: number): Promise<MatchDetail | null>
   }));
 
   return { ...base, events };
+}
+
+// YouTube 하이라이트 검색
+export async function getHighlights(query: string, count = 12): Promise<Highlight[]> {
+  try {
+    const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
+    const res = await fetch(url, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+        "Accept-Language": "ko-KR,ko;q=0.9",
+      },
+      next: { revalidate: 3600 },
+    });
+    const html = await res.text();
+
+    // ytInitialData 추출
+    const jsonMatch = html.match(/var ytInitialData\s*=\s*(\{.+?\});\s*<\/script>/s);
+    if (!jsonMatch) return [];
+
+    const data = JSON.parse(jsonMatch[1]);
+    const sectionContents =
+      data?.contents?.twoColumnSearchResultsRenderer?.primaryContents
+        ?.sectionListRenderer?.contents ?? [];
+
+    const results: Highlight[] = [];
+    for (const section of sectionContents) {
+      const items = section?.itemSectionRenderer?.contents ?? [];
+      for (const item of items) {
+        const vr = item?.videoRenderer;
+        if (!vr?.videoId) continue;
+        const title = vr.title?.runs?.[0]?.text ?? "";
+        // 광고나 관련없는 영상 제외
+        if (!title) continue;
+        results.push({
+          id: vr.videoId,
+          title,
+          thumb: `https://img.youtube.com/vi/${vr.videoId}/mqdefault.jpg`,
+          url: `https://www.youtube.com/watch?v=${vr.videoId}`,
+        });
+        if (results.length >= count) break;
+      }
+      if (results.length >= count) break;
+    }
+    return results;
+  } catch {
+    return [];
+  }
 }
 
 function mapFixture(f: any): Match {

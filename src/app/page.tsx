@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { KOREA_TEAMS } from "@/data/teams";
 import { Team, Match } from "@/types/football";
-import { getFixtures } from "@/lib/api";
+import { getFixtures, getHighlights, Highlight } from "@/lib/api";
 
 const CATEGORY_LABEL: Record<string, string> = {
   senior: "성인",
@@ -51,9 +51,17 @@ function MatchRow({ match, teamId, label }: { match: Match | null; teamId: numbe
   );
 }
 
-function TeamCard({ team, lastMatch, nextMatch }: { team: Team; lastMatch: Match | null; nextMatch: Match | null }) {
+function TeamCard({
+  team, lastMatch, nextMatch, highlights,
+}: {
+  team: Team;
+  lastMatch: Match | null;
+  nextMatch: Match | null;
+  highlights: Highlight[];
+}) {
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-md hover:border-blue-200 transition-all overflow-hidden">
+      {/* 팀 헤더 */}
       <Link href={`/teams/${team.id}`} className="block p-5 group">
         <div className="flex items-center gap-4">
           <div className="relative w-14 h-14 flex-shrink-0">
@@ -71,28 +79,73 @@ function TeamCard({ team, lastMatch, nextMatch }: { team: Team; lastMatch: Match
           </div>
         </div>
       </Link>
-      <div className="border-t border-gray-50 px-5 pb-4 pt-2">
+
+      {/* 경기 일정 */}
+      <div className="border-t border-gray-50 px-5 pb-3 pt-2">
         <MatchRow match={lastMatch} teamId={team.id} label="최근" />
         <MatchRow match={nextMatch} teamId={team.id} label="다음" />
       </div>
+
+      {/* 하이라이트 섬네일 2개 */}
+      {highlights.length > 0 && (
+        <div className="border-t border-gray-50 px-4 pb-4 pt-3">
+          <p className="text-xs font-semibold text-gray-400 mb-2">🎬 최근 하이라이트</p>
+          <div className="grid grid-cols-2 gap-2">
+            {highlights.slice(0, 2).map((h) => (
+              <a
+                key={h.id}
+                href={h.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group/hl rounded-lg overflow-hidden border border-gray-100 hover:border-red-300 hover:shadow-sm transition-all"
+              >
+                <div className="relative w-full aspect-video bg-gray-100 overflow-hidden">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={h.thumb}
+                    alt={h.title}
+                    className="w-full h-full object-cover group-hover/hl:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover/hl:bg-black/35 transition-colors">
+                    <div className="w-7 h-7 rounded-full bg-red-600/90 flex items-center justify-center shadow">
+                      <svg className="w-3 h-3 text-white ml-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+                <div className="px-1.5 py-1.5">
+                  <p className="text-[10px] text-gray-600 line-clamp-2 leading-tight group-hover/hl:text-red-600 transition-colors">
+                    {h.title}
+                  </p>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 export default async function HomePage() {
-  // 모든 팀의 경기 일정을 병렬로 조회
-  const fixturesPerTeam = await Promise.all(
-    KOREA_TEAMS.map((team) =>
-      getFixtures(team.id, 2024).catch(() => [] as Match[])
-    )
-  );
+  // 모든 팀의 경기 일정 + 하이라이트를 병렬로 조회
+  const [fixturesPerTeam, highlightsPerTeam] = await Promise.all([
+    Promise.all(
+      KOREA_TEAMS.map((team) => getFixtures(team.id, 2024).catch(() => [] as Match[]))
+    ),
+    Promise.all(
+      KOREA_TEAMS.map((team) => getHighlights(team.highlightQuery, 2).catch(() => [] as Highlight[]))
+    ),
+  ]);
 
   const maleTeams = KOREA_TEAMS.filter((t) => t.gender === "male");
   const femaleTeams = KOREA_TEAMS.filter((t) => t.gender === "female");
 
-  function getMatchInfo(team: Team) {
+  function getTeamData(team: Team) {
     const idx = KOREA_TEAMS.indexOf(team);
     const fixtures = fixturesPerTeam[idx] ?? [];
+    const highlights = highlightsPerTeam[idx] ?? [];
 
     const lastMatch = fixtures
       .filter((m) => FINISHED.includes(m.status.short))
@@ -102,7 +155,7 @@ export default async function HomePage() {
       .filter((m) => !FINISHED.includes(m.status.short))
       .sort((a, b) => a.timestamp - b.timestamp)[0] ?? null;
 
-    return { lastMatch, nextMatch };
+    return { lastMatch, nextMatch, highlights };
   }
 
   return (
@@ -123,8 +176,8 @@ export default async function HomePage() {
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {maleTeams.map((team) => {
-              const { lastMatch, nextMatch } = getMatchInfo(team);
-              return <TeamCard key={team.id} team={team} lastMatch={lastMatch} nextMatch={nextMatch} />;
+              const { lastMatch, nextMatch, highlights } = getTeamData(team);
+              return <TeamCard key={team.id} team={team} lastMatch={lastMatch} nextMatch={nextMatch} highlights={highlights} />;
             })}
           </div>
         </section>
@@ -136,8 +189,8 @@ export default async function HomePage() {
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {femaleTeams.map((team) => {
-              const { lastMatch, nextMatch } = getMatchInfo(team);
-              return <TeamCard key={team.id} team={team} lastMatch={lastMatch} nextMatch={nextMatch} />;
+              const { lastMatch, nextMatch, highlights } = getTeamData(team);
+              return <TeamCard key={team.id} team={team} lastMatch={lastMatch} nextMatch={nextMatch} highlights={highlights} />;
             })}
           </div>
         </section>
