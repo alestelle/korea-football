@@ -137,11 +137,26 @@ export async function getHighlights(query: string, count = 12): Promise<Highligh
     });
     const html = await res.text();
 
-    // ytInitialData 추출
-    const jsonMatch = html.match(/var ytInitialData\s*=\s*(\{.+?\});\s*<\/script>/s);
-    if (!jsonMatch) return [];
+    // ytInitialData 추출 (중괄호 카운팅으로 정확한 JSON 범위 추출)
+    const marker = "var ytInitialData = ";
+    const markerIdx = html.indexOf(marker);
+    if (markerIdx === -1) return [];
 
-    const data = JSON.parse(jsonMatch[1]);
+    const jsonStart = html.indexOf("{", markerIdx);
+    if (jsonStart === -1) return [];
+
+    let depth = 0;
+    let jsonEnd = jsonStart;
+    for (let i = jsonStart; i < html.length; i++) {
+      if (html[i] === "{") depth++;
+      else if (html[i] === "}") {
+        depth--;
+        if (depth === 0) { jsonEnd = i; break; }
+      }
+    }
+    if (depth !== 0) return [];
+
+    const data = JSON.parse(html.slice(jsonStart, jsonEnd + 1));
     const sectionContents =
       data?.contents?.twoColumnSearchResultsRenderer?.primaryContents
         ?.sectionListRenderer?.contents ?? [];

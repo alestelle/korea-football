@@ -164,7 +164,7 @@ export default async function HomePage() {
         <div className="max-w-3xl mx-auto text-center">
           <div className="flex justify-center mb-4">
             <Image
-              src="https://media.api-sports.io/football/teams/17.png"
+              src="https://media.api-sports.io/football/teams/10177.png"
               alt="대한민국 축구 대표팀 엠블럼"
               width={80}
               height={80}
