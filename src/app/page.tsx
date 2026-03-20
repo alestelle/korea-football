@@ -4,6 +4,7 @@ import { KOREA_TEAMS } from "@/data/teams";
 import { Team, Match } from "@/types/football";
 import { getHighlights, Highlight } from "@/lib/api";
 import { getKFAFixtures, getKFASquad, KFAPlayer } from "@/lib/kfa";
+import { buildNaverSearchUrl } from "@/lib/naver-sports";
 
 const CATEGORY_LABEL: Record<string, string> = {
   senior: "성인",
@@ -29,9 +30,10 @@ function MatchRow({ match, teamId, label }: { match: Match | null; teamId: numbe
   const isFinished = FINISHED.includes(match.status.short);
   const date = new Date(match.date);
   const won = isHome ? match.homeTeam.winner : match.awayTeam.winner;
+  const href = buildNaverSearchUrl(opponent.nameKo ?? opponent.name, date);
 
   return (
-    <Link href={`/matches/${match.id}`} className="flex items-center gap-2 text-xs py-1.5 hover:bg-gray-50 rounded-lg px-1 -mx-1 transition-colors group/row">
+    <a href={href} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-xs py-1.5 hover:bg-gray-50 rounded-lg px-1 -mx-1 transition-colors group/row">
       <span className="w-8 flex-shrink-0 font-medium text-gray-500">{label}</span>
       {opponent.logo ? (
         <Image src={opponent.logo} alt={opponent.name} width={16} height={16} unoptimized className="flex-shrink-0" />
@@ -52,7 +54,7 @@ function MatchRow({ match, teamId, label }: { match: Match | null; teamId: numbe
           </span>
         )}
       </span>
-    </Link>
+    </a>
   );
 }
 
