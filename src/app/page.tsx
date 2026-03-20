@@ -210,6 +210,58 @@ export default async function HomePage() {
             })}
           </div>
         </section>
+
+        {/* 커뮤니티 */}
+        <section>
+          <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <span className="w-1 h-5 bg-green-500 rounded-full inline-block" />
+            커뮤니티
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* 네이버 오픈톡 */}
+            <a
+              href="https://talk.naver.com/search?query=%EC%B6%95%EA%B5%AC"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-4 bg-white rounded-2xl border border-gray-100 hover:border-green-300 hover:shadow-md transition-all p-4 group"
+            >
+              <div className="w-11 h-11 rounded-xl bg-[#03C75A] flex items-center justify-center flex-shrink-0 shadow-sm">
+                <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C6.477 2 2 6.108 2 11.25c0 3.037 1.523 5.733 3.875 7.438V22l3.398-1.875c.883.244 1.82.375 2.727.375 5.523 0 10-4.108 10-9.25S17.523 2 12 2zm1.094 12.453l-2.547-2.719-4.969 2.719 5.469-5.812 2.609 2.719 4.906-2.719-5.468 5.812z"/>
+                </svg>
+              </div>
+              <div className="min-w-0">
+                <p className="font-bold text-sm text-gray-900 group-hover:text-green-600 transition-colors">네이버 오픈톡</p>
+                <p className="text-xs text-gray-400 mt-0.5 truncate">축구 관련 오픈톡 채팅방 모아보기</p>
+              </div>
+              <svg className="w-4 h-4 text-gray-300 group-hover:text-green-400 flex-shrink-0 ml-auto transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </a>
+
+            {/* 네이버 오픈라운지 */}
+            <a
+              href="https://lounge.naver.com/search?query=%EC%B6%95%EA%B5%AC"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-4 bg-white rounded-2xl border border-gray-100 hover:border-green-300 hover:shadow-md transition-all p-4 group"
+            >
+              <div className="w-11 h-11 rounded-xl bg-[#03C75A] flex items-center justify-center flex-shrink-0 shadow-sm">
+                <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/>
+                </svg>
+              </div>
+              <div className="min-w-0">
+                <p className="font-bold text-sm text-gray-900 group-hover:text-green-600 transition-colors">네이버 오픈라운지</p>
+                <p className="text-xs text-gray-400 mt-0.5 truncate">축구 팬들의 자유로운 소통 공간</p>
+              </div>
+              <svg className="w-4 h-4 text-gray-300 group-hover:text-green-400 flex-shrink-0 ml-auto transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </a>
+          </div>
+        </section>
+
       </div>
     </main>
   );
