@@ -304,31 +304,37 @@ export async function getKFAFixtures(
   const curYear = today.getFullYear();
   const curMonth = today.getMonth() + 1;
 
-  // 최근 4개월 + 현재 + 향후 2개월 fetch
-  const months: { year: number; month: number }[] = [];
-  for (let d = -4; d <= 2; d++) {
-    months.push(addMonths(curYear, curMonth, d));
+  // 최근 4개월 + 현재 + 향후 8개월 fetch (월드컵 예선 대응)
+  const pastMonths: { year: number; month: number; delta: number }[] = [];
+  const futureMonths: { year: number; month: number; delta: number }[] = [];
+  for (let d = -4; d <= 8; d++) {
+    const entry = { ...addMonths(curYear, curMonth, d), delta: d };
+    if (d <= 0) pastMonths.push(entry);
+    else futureMonths.push(entry);
   }
+  const allMonths = [...pastMonths, ...futureMonths];
 
   const [homeHtml, ...monthHtmls] = await Promise.all([
     fetch(`${KFA_BASE}`, { headers: HEADERS, next: { revalidate: 1800 } }).then((r) => r.text()).catch(() => ""),
-    ...months.map(({ year, month }) =>
+    ...allMonths.map(({ year, month }) =>
       fetchKFAMonthPage(year, month).catch(() => "")
     ),
   ]);
 
-  // 예정 경기 (홈페이지)
+  // 예정 경기 (홈페이지 next_schedule)
   const upcoming = parseUpcomingHtml(homeHtml).filter((m) =>
     filterByTeam(m, kfaTeamKeyword)
   );
 
-  // 과거 결과
+  // 과거 결과 (완료 경기만) + 미래 예정 경기 (미완료 포함)
   const results: KFAMatchRaw[] = [];
   for (let i = 0; i < monthHtmls.length; i++) {
-    const { year } = months[i];
-    const parsed = parseScheduleHtml(monthHtmls[i], year).filter((m) =>
-      filterByTeam(m, kfaTeamKeyword) && m.isFinished
-    );
+    const { year, delta } = allMonths[i];
+    const parsed = parseScheduleHtml(monthHtmls[i], year).filter((m) => {
+      if (!filterByTeam(m, kfaTeamKeyword)) return false;
+      // 과거 월: 완료된 경기만 / 현재·미래 월: 완료 + 예정 모두 포함
+      return delta <= 0 ? m.isFinished : true;
+    });
     results.push(...parsed);
   }
 
