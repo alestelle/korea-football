@@ -12,6 +12,7 @@ export const KOREA_TEAMS: Team[] = [
     highlightQuery: "한국 남자 축구 A대표팀 경기 하이라이트",
     kfaAct: "nt_man",
     kfaTeamKeyword: "남자 국가대표팀",
+    captainNameKo: "손흥민",
   },
   {
     id: 10177,
@@ -60,6 +61,7 @@ export const KOREA_TEAMS: Team[] = [
     highlightQuery: "대한민국 여자 축구 A대표팀 경기 하이라이트",
     kfaAct: "nt_woman",
     kfaTeamKeyword: "여자 국가대표팀",
+    captainNameKo: "조소현",
   },
   {
     id: 19087,

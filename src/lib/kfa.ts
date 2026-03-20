@@ -11,9 +11,15 @@ const HEADERS = {
   "Accept-Language": "ko-KR,ko;q=0.9",
 };
 
-// 포지션 영문 → 한글
+// 포지션 영문 → 한글 (선수 + 지도자)
 const POSITION_KO: Record<string, string> = {
+  // 선수
   gk: "골키퍼", df: "수비수", mf: "미드필더", fw: "공격수",
+  // 지도자/스태프
+  dir: "감독", head: "감독", manager: "감독",
+  coach: "코치", gkc: "골키퍼코치", gc: "골키퍼코치",
+  fitt: "피지컬코치", fit: "피지컬코치", fitness: "피지컬코치",
+  staff: "스태프", etc: "스태프",
 };
 
 // 한국 도시/지명 목록 (홈 경기 판별)

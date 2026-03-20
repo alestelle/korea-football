@@ -3,7 +3,7 @@ import Image from "next/image";
 import { KOREA_TEAMS } from "@/data/teams";
 import { Team, Match } from "@/types/football";
 import { getHighlights, Highlight } from "@/lib/api";
-import { getKFAFixtures } from "@/lib/kfa";
+import { getKFAFixtures, getKFASquad, KFAPlayer } from "@/lib/kfa";
 
 const CATEGORY_LABEL: Record<string, string> = {
   senior: "성인",
@@ -56,14 +56,66 @@ function MatchRow({ match, teamId, label }: { match: Match | null; teamId: numbe
   );
 }
 
+function PlayerThumb({
+  player,
+  isCaptan,
+}: {
+  player: KFAPlayer;
+  isCaptan: boolean;
+}) {
+  const naverUrl = `https://search.naver.com/search.naver?query=${encodeURIComponent(player.nameKo + " 축구선수")}`;
+  return (
+    <a
+      href={naverUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex flex-col items-center gap-1 flex-shrink-0 group/pt"
+    >
+      <div className="relative">
+        <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-100 border border-gray-200">
+          {player.photo ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={player.photo} alt={player.nameKo} className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs">?</div>
+          )}
+        </div>
+        {isCaptan && (
+          <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-yellow-400 flex items-center justify-center text-[9px] font-bold text-white shadow-sm">
+            C
+          </span>
+        )}
+      </div>
+      <span className="text-[10px] text-gray-600 group-hover/pt:text-blue-600 transition-colors w-12 text-center truncate leading-tight">
+        {player.nameKo}
+      </span>
+    </a>
+  );
+}
+
 function TeamCard({
-  team, lastMatch, nextMatch, highlights,
+  team,
+  lastMatch,
+  nextMatch,
+  highlights,
+  players,
 }: {
   team: Team;
   lastMatch: Match | null;
   nextMatch: Match | null;
   highlights: Highlight[];
+  players: KFAPlayer[];
 }) {
+  // 주장을 맨 앞으로, 나머지 5명
+  const captainIdx = team.captainNameKo
+    ? players.findIndex((p) => p.nameKo.includes(team.captainNameKo!))
+    : -1;
+  const sorted =
+    captainIdx > 0
+      ? [players[captainIdx], ...players.filter((_, i) => i !== captainIdx)]
+      : players;
+  const featured = sorted.slice(0, 6);
+
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-md hover:border-blue-200 transition-all overflow-hidden">
       {/* 팀 헤더 */}
@@ -90,6 +142,22 @@ function TeamCard({
         <MatchRow match={lastMatch} teamId={team.id} label="최근" />
         <MatchRow match={nextMatch} teamId={team.id} label="다음" />
       </div>
+
+      {/* 주요 선수 썸네일 */}
+      {featured.length > 0 && (
+        <div className="border-t border-gray-50 px-4 pb-3 pt-2.5">
+          <p className="text-[11px] font-semibold text-gray-400 mb-2">선수단</p>
+          <div className="flex gap-3 overflow-x-auto pb-1">
+            {featured.map((p) => (
+              <PlayerThumb
+                key={p.id}
+                player={p}
+                isCaptan={!!team.captainNameKo && p.nameKo.includes(team.captainNameKo)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* 하이라이트 섬네일 2개 */}
       {highlights.length > 0 && (
@@ -134,13 +202,16 @@ function TeamCard({
 }
 
 export default async function HomePage() {
-  // 모든 팀의 경기 일정 + 하이라이트를 병렬로 조회
-  const [fixturesPerTeam, highlightsPerTeam] = await Promise.all([
+  // 모든 팀의 경기 일정 + 하이라이트 + 선수단을 병렬로 조회
+  const [fixturesPerTeam, highlightsPerTeam, squadsPerTeam] = await Promise.all([
     Promise.all(
       KOREA_TEAMS.map((team) => getKFAFixtures(team.id, team.kfaTeamKeyword).catch(() => [] as Match[]))
     ),
     Promise.all(
       KOREA_TEAMS.map((team) => getHighlights(team.highlightQuery, 2).catch(() => [] as Highlight[]))
+    ),
+    Promise.all(
+      KOREA_TEAMS.map((team) => getKFASquad(team.kfaAct).catch(() => [] as KFAPlayer[]))
     ),
   ]);
 
@@ -151,6 +222,7 @@ export default async function HomePage() {
     const idx = KOREA_TEAMS.indexOf(team);
     const fixtures = fixturesPerTeam[idx] ?? [];
     const highlights = highlightsPerTeam[idx] ?? [];
+    const players = squadsPerTeam[idx] ?? [];
 
     const lastMatch = fixtures
       .filter((m) => FINISHED.includes(m.status.short))
@@ -160,27 +232,31 @@ export default async function HomePage() {
       .filter((m) => !FINISHED.includes(m.status.short))
       .sort((a, b) => a.timestamp - b.timestamp)[0] ?? null;
 
-    return { lastMatch, nextMatch, highlights };
+    return { lastMatch, nextMatch, highlights, players };
   }
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <div className="bg-[#C41E3A] text-white py-12 px-4">
-        <div className="max-w-3xl mx-auto text-center">
-          <div className="flex justify-center mb-4">
+      <div className="bg-[#C41E3A] text-white py-10 px-4">
+        <div className="max-w-3xl mx-auto">
+          <div className="flex items-center justify-center gap-4">
             <Image
               src="https://media.api-sports.io/football/teams/10177.png"
               alt="대한민국 축구 대표팀 엠블럼"
-              width={80}
-              height={80}
+              width={64}
+              height={64}
               unoptimized
-              className="drop-shadow-lg"
+              className="drop-shadow-lg flex-shrink-0"
             />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-2xl font-extrabold">대한민국 축구 대표팀</h1>
+                <span className="text-[11px] font-semibold bg-white/20 text-white px-2.5 py-0.5 rounded-full tracking-wide whitespace-nowrap">
+                  스포츠기획 AI 프로토타입 v0.1
+                </span>
+              </div>
+            </div>
           </div>
-          <h1 className="text-3xl font-extrabold mb-3">대한민국 축구 대표팀</h1>
-          <span className="inline-block text-xs font-semibold bg-white/20 text-white px-3 py-1 rounded-full tracking-wide">
-            스포츠기획 프로토타입
-          </span>
         </div>
       </div>
 
@@ -192,8 +268,8 @@ export default async function HomePage() {
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {maleTeams.map((team) => {
-              const { lastMatch, nextMatch, highlights } = getTeamData(team);
-              return <TeamCard key={team.id} team={team} lastMatch={lastMatch} nextMatch={nextMatch} highlights={highlights} />;
+              const { lastMatch, nextMatch, highlights, players } = getTeamData(team);
+              return <TeamCard key={team.id} team={team} lastMatch={lastMatch} nextMatch={nextMatch} highlights={highlights} players={players} />;
             })}
           </div>
         </section>
@@ -205,8 +281,8 @@ export default async function HomePage() {
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {femaleTeams.map((team) => {
-              const { lastMatch, nextMatch, highlights } = getTeamData(team);
-              return <TeamCard key={team.id} team={team} lastMatch={lastMatch} nextMatch={nextMatch} highlights={highlights} />;
+              const { lastMatch, nextMatch, highlights, players } = getTeamData(team);
+              return <TeamCard key={team.id} team={team} lastMatch={lastMatch} nextMatch={nextMatch} highlights={highlights} players={players} />;
             })}
           </div>
         </section>
@@ -227,7 +303,7 @@ export default async function HomePage() {
             >
               <div className="w-11 h-11 rounded-xl bg-[#03C75A] flex items-center justify-center flex-shrink-0 shadow-sm">
                 <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2C6.477 2 2 6.108 2 11.25c0 3.037 1.523 5.733 3.875 7.438V22l3.398-1.875c.883.244 1.82.375 2.727.375 5.523 0 10-4.108 10-9.25S17.523 2 12 2zm1.094 12.453l-2.547-2.719-4.969 2.719 5.469-5.812 2.609 2.719 4.906-2.719-5.468 5.812z"/>
+                  <path d="M12 2C6.477 2 2 6.108 2 11.25c0 3.037 1.523 5.733 3.875 7.438V22l3.398-1.875c.883.244 1.82.375 2.727.375 5.523 0 10-4.108 10-9.25S17.523 2 12 2zm1.094 12.453l-2.547-2.719-4.969 2.719 5.469-5.812 2.609 2.719 4.906-2.719-5.468 5.812z" />
                 </svg>
               </div>
               <div className="min-w-0">
@@ -248,7 +324,7 @@ export default async function HomePage() {
             >
               <div className="w-11 h-11 rounded-xl bg-[#03C75A] flex items-center justify-center flex-shrink-0 shadow-sm">
                 <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2C6.477 2 2 6.108 2 11.25c0 3.037 1.523 5.733 3.875 7.438V22l3.398-1.875c.883.244 1.82.375 2.727.375 5.523 0 10-4.108 10-9.25S17.523 2 12 2zm1.094 12.453l-2.547-2.719-4.969 2.719 5.469-5.812 2.609 2.719 4.906-2.719-5.468 5.812z"/>
+                  <path d="M12 2C6.477 2 2 6.108 2 11.25c0 3.037 1.523 5.733 3.875 7.438V22l3.398-1.875c.883.244 1.82.375 2.727.375 5.523 0 10-4.108 10-9.25S17.523 2 12 2zm1.094 12.453l-2.547-2.719-4.969 2.719 5.469-5.812 2.609 2.719 4.906-2.719-5.468 5.812z" />
                 </svg>
               </div>
               <div className="min-w-0">
