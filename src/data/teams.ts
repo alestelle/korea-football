@@ -8,8 +8,8 @@ export const KOREA_TEAMS: Team[] = [
     code: "KOR",
     category: "senior",
     gender: "male",
-    logo: "https://media.api-sports.io/football/teams/17.png",
-    highlightQuery: "대한민국 축구 국가대표 하이라이트",
+    logo: "https://media.api-sports.io/football/teams/10177.png",
+    highlightQuery: "한국 남자 축구 A대표팀 경기 하이라이트",
   },
   {
     id: 10177,
@@ -19,7 +19,7 @@ export const KOREA_TEAMS: Team[] = [
     category: "u23",
     gender: "male",
     logo: "https://media.api-sports.io/football/teams/10177.png",
-    highlightQuery: "대한민국 U23 축구 하이라이트",
+    highlightQuery: "대한민국 U-23 남자 축구 하이라이트 AFC",
   },
   {
     id: 10291,
@@ -28,8 +28,8 @@ export const KOREA_TEAMS: Team[] = [
     code: "KOR",
     category: "u20",
     gender: "male",
-    logo: "https://media.api-sports.io/football/teams/10291.png",
-    highlightQuery: "대한민국 U20 축구 하이라이트",
+    logo: "https://media.api-sports.io/football/teams/10177.png",
+    highlightQuery: "대한민국 U-20 남자 축구 하이라이트 FIFA",
   },
   {
     id: 12512,
@@ -38,8 +38,8 @@ export const KOREA_TEAMS: Team[] = [
     code: "KOR",
     category: "u17",
     gender: "male",
-    logo: "https://media.api-sports.io/football/teams/12512.png",
-    highlightQuery: "대한민국 U17 축구 하이라이트",
+    logo: "https://media.api-sports.io/football/teams/10177.png",
+    highlightQuery: "대한민국 U-17 남자 축구 하이라이트",
   },
   {
     id: 1728,
@@ -48,8 +48,8 @@ export const KOREA_TEAMS: Team[] = [
     code: "KOR",
     category: "senior",
     gender: "female",
-    logo: "https://media.api-sports.io/football/teams/1728.png",
-    highlightQuery: "대한민국 여자 축구 국가대표 하이라이트",
+    logo: "https://media.api-sports.io/football/teams/10177.png",
+    highlightQuery: "대한민국 여자 축구 A대표팀 경기 하이라이트",
   },
   {
     id: 19087,
@@ -58,8 +58,8 @@ export const KOREA_TEAMS: Team[] = [
     code: "KOR",
     category: "u20",
     gender: "female",
-    logo: "https://media.api-sports.io/football/teams/19087.png",
-    highlightQuery: "대한민국 U20 여자 축구 하이라이트",
+    logo: "https://media.api-sports.io/football/teams/10177.png",
+    highlightQuery: "대한민국 U-20 여자 축구 하이라이트",
   },
 ];
 
