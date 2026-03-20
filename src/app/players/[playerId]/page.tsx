@@ -14,7 +14,7 @@ export default async function PlayerPage({
 }) {
   const { playerId } = await params;
   const { team } = await searchParams;
-  const teamId = Number(team ?? 732);
+  const teamId = Number(team ?? 17);
   const player = await getPlayer(Number(playerId), teamId);
   if (!player) notFound();
 
