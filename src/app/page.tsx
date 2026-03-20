@@ -67,9 +67,9 @@ function TeamCard({
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-md hover:border-blue-200 transition-all overflow-hidden">
       {/* 팀 헤더 */}
-      <Link href={`/teams/${team.id}`} className="block p-5 group">
-        <div className="flex items-center gap-4">
-          <div className="relative w-14 h-14 flex-shrink-0">
+      <Link href={`/teams/${team.id}`} className="block p-4 group">
+        <div className="flex items-center gap-3">
+          <div className="relative w-11 h-11 flex-shrink-0">
             <Image src={team.logo} alt={team.nameKo} fill className="object-contain" unoptimized />
           </div>
           <div>
@@ -93,7 +93,7 @@ function TeamCard({
 
       {/* 하이라이트 섬네일 2개 */}
       {highlights.length > 0 && (
-        <div className="border-t border-gray-50 px-4 pb-4 pt-3">
+        <div className="border-t border-gray-50 px-6 pb-3 pt-2.5">
           <p className="text-xs font-semibold text-gray-400 mb-2">🎬 최근 하이라이트</p>
           <div className="grid grid-cols-2 gap-2">
             {highlights.slice(0, 2).map((h) => (
