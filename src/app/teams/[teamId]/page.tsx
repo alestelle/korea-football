@@ -10,6 +10,7 @@ import {
   buildNaverSearchUrl,
   OnelineComment,
 } from "@/lib/naver-sports";
+import { getNaverGameUrl } from "@/data/naver-game-codes";
 
 export const dynamic = "force-dynamic";
 
@@ -184,17 +185,13 @@ function PlayerCard({ player }: { player: KFAPlayer }) {
           href={naverUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="w-3.5 h-3.5 rounded-sm overflow-hidden flex items-center justify-center hover:opacity-75 transition-opacity flex-shrink-0"
+          className="w-3.5 h-3.5 rounded-sm overflow-hidden flex items-center justify-center hover:opacity-75 transition-opacity flex-shrink-0 bg-[#03C75A]"
           title="네이버 검색"
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="https://static.nid.naver.com/front/template/resources/img/icon/v2/naver_icon.svg"
-            alt="Naver"
-            width={14}
-            height={14}
-            className="w-full h-full object-contain"
-          />
+          {/* 네이버 N 인라인 SVG */}
+          <svg viewBox="0 0 24 24" className="w-full h-full" fill="white" xmlns="http://www.w3.org/2000/svg">
+            <path d="M16.273 12.845L7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"/>
+          </svg>
         </a>
         <a
           href={instaUrl}
@@ -268,20 +265,29 @@ export default async function TeamPage({ params }: { params: Promise<{ teamId: s
         m.homeTeam.id === id
           ? (m.awayTeam.nameKo ?? m.awayTeam.name)
           : (m.homeTeam.nameKo ?? m.homeTeam.name);
-      return getMatchNaverData(opponent, new Date(m.date)).catch(() => ({
+      const date = new Date(m.date);
+      // 1순위: 수동 매핑된 game 코드
+      const staticUrl = getNaverGameUrl(date, m.homeTeam.id === id ? m.awayTeam.name : m.homeTeam.name);
+      if (staticUrl) {
+        return Promise.resolve({ gameUrl: staticUrl, comments: [] as OnelineComment[] });
+      }
+      // 2순위: 자동 스크래핑
+      return getMatchNaverData(opponent, date).catch(() => ({
         gameUrl: null,
         comments: [] as OnelineComment[],
       }));
     })
   );
 
-  // 예정 경기 링크는 Naver 검색으로 폴백
+  // 예정 경기 링크: 수동 매핑 우선, 없으면 Naver 검색
   const upcomingNaverUrls = upcomingMatches.map((m) => {
     const opponent =
       m.homeTeam.id === id
         ? (m.awayTeam.nameKo ?? m.awayTeam.name)
         : (m.homeTeam.nameKo ?? m.homeTeam.name);
-    return buildNaverSearchUrl(opponent, new Date(m.date));
+    const date = new Date(m.date);
+    const staticUrl = getNaverGameUrl(date, m.homeTeam.id === id ? m.awayTeam.name : m.homeTeam.name);
+    return staticUrl ?? buildNaverSearchUrl(opponent, date);
   });
 
   const byPosition: Record<string, KFAPlayer[]> = {};
