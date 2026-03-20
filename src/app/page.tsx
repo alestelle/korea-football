@@ -162,8 +162,17 @@ export default async function HomePage() {
     <main className="min-h-screen bg-gray-50">
       <div className="bg-[#C41E3A] text-white py-12 px-4">
         <div className="max-w-3xl mx-auto text-center">
-          <p className="text-red-200 text-sm font-medium mb-2">대한민국 축구</p>
-          <h1 className="text-3xl font-extrabold mb-1">🇰🇷 국가대표팀</h1>
+          <div className="flex justify-center mb-4">
+            <Image
+              src="https://media.api-sports.io/football/teams/17.png"
+              alt="대한민국 축구 대표팀 엠블럼"
+              width={80}
+              height={80}
+              unoptimized
+              className="drop-shadow-lg"
+            />
+          </div>
+          <h1 className="text-3xl font-extrabold mb-1">대한민국 축구 대표팀</h1>
           <p className="text-red-100 text-sm">선수단 · 일정 · 결과</p>
         </div>
       </div>
