@@ -97,25 +97,28 @@ function MatchCard({ match, teamId }: { match: Match; teamId: number }) {
   );
 }
 
-function PlayerCard({ player, teamId }: { player: Player; teamId: number }) {
+function PlayerCard({ player }: { player: Player }) {
+  const displayName = player.nameKo ?? player.name;
+  const naverUrl = `https://search.naver.com/search.naver?query=${encodeURIComponent("축구선수 " + displayName)}`;
+
   return (
-    <Link href={`/players/${player.id}?team=${teamId}`}>
+    <a href={naverUrl} target="_blank" rel="noopener noreferrer">
       <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-100 hover:border-blue-200 hover:shadow-sm transition-all group">
         <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-100 flex-shrink-0">
           {player.photo ? (
-            <Image src={player.photo} alt={player.nameKo ?? player.name} fill className="object-cover" unoptimized />
+            <Image src={player.photo} alt={displayName} fill className="object-cover" unoptimized />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">?</div>
           )}
         </div>
         <div className="min-w-0">
           <p className="font-semibold text-sm text-gray-900 group-hover:text-blue-600 transition-colors truncate">
-            {player.nameKo ?? player.name}
+            {displayName}
           </p>
           <p className="text-xs text-gray-400">{player.positionKo} {player.number ? `· #${player.number}` : ""}</p>
         </div>
       </div>
-    </Link>
+    </a>
   );
 }
 
@@ -289,7 +292,7 @@ export default async function TeamPage({ params }: { params: Promise<{ teamId: s
               <div key={pos} className="mb-4">
                 <h3 className="text-xs font-semibold text-gray-500 uppercase mb-2">{pos}</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {byPosition[pos].map((p) => <PlayerCard key={p.id} player={p} teamId={id} />)}
+                  {byPosition[pos].map((p) => <PlayerCard key={p.id} player={p} />)}
                 </div>
               </div>
             ) : null
