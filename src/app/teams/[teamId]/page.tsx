@@ -1,4 +1,4 @@
-import { getSquad, getFixtures, getHighlights, Highlight } from "@/lib/api";
+import { getSquad, getFixtures, getHighlights } from "@/lib/api";
 import { getTeamById } from "@/data/teams";
 import { notFound } from "next/navigation";
 import Image from "next/image";
@@ -6,6 +6,96 @@ import Link from "next/link";
 import { Player, Coach, Match } from "@/types/football";
 
 export const dynamic = "force-dynamic";
+
+const FINISHED = ["FT", "AET", "PEN"];
+
+function MatchCard({ match, teamId }: { match: Match; teamId: number }) {
+  const isHome = match.homeTeam.id === teamId;
+  const isFinished = FINISHED.includes(match.status.short);
+  const won = isHome ? match.homeTeam.winner : match.awayTeam.winner;
+  const date = new Date(match.date);
+
+  const resultBadge = isFinished
+    ? won === true
+      ? { label: "승", color: "bg-blue-100 text-blue-700" }
+      : won === false
+      ? { label: "패", color: "bg-red-100 text-red-600" }
+      : { label: "무", color: "bg-gray-100 text-gray-600" }
+    : null;
+
+  return (
+    <Link href={`/matches/${match.id}`}>
+      <div className="bg-white rounded-2xl border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all overflow-hidden">
+        {/* 대회명 + 날짜 */}
+        <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b border-gray-50">
+          <span className="text-xs text-gray-500 font-medium truncate flex-1">
+            {match.league.nameKo ?? match.league.name}
+            {match.league.round ? ` · ${match.league.round}` : ""}
+          </span>
+          <span className="text-xs text-gray-400 flex-shrink-0 ml-2">
+            {date.toLocaleDateString("ko-KR", { year: "numeric", month: "short", day: "numeric" })}
+          </span>
+        </div>
+
+        {/* 팀 로고 + 스코어 */}
+        <div className="flex items-center justify-between px-4 py-4 gap-2">
+          {/* 홈팀 */}
+          <div className="flex flex-col items-center gap-1.5 flex-1">
+            <Image src={match.homeTeam.logo} alt={match.homeTeam.name} width={36} height={36} unoptimized />
+            <span className={`text-xs font-medium text-center leading-tight ${match.homeTeam.id === teamId ? "text-blue-700 font-bold" : "text-gray-700"}`}>
+              {match.homeTeam.nameKo ?? match.homeTeam.name}
+            </span>
+            <span className="text-[10px] text-gray-400">홈</span>
+          </div>
+
+          {/* 스코어 */}
+          <div className="flex flex-col items-center gap-1.5 flex-shrink-0 px-3">
+            {isFinished ? (
+              <>
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl font-extrabold text-gray-800">{match.score.home}</span>
+                  <span className="text-lg text-gray-300">:</span>
+                  <span className="text-2xl font-extrabold text-gray-800">{match.score.away}</span>
+                </div>
+                {resultBadge && (
+                  <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${resultBadge.color}`}>
+                    {resultBadge.label}
+                  </span>
+                )}
+              </>
+            ) : (
+              <>
+                <span className="text-lg font-bold text-gray-300">VS</span>
+                <span className="text-[11px] text-gray-400 font-medium">{match.status.longKo}</span>
+              </>
+            )}
+          </div>
+
+          {/* 원정팀 */}
+          <div className="flex flex-col items-center gap-1.5 flex-1">
+            <Image src={match.awayTeam.logo} alt={match.awayTeam.name} width={36} height={36} unoptimized />
+            <span className={`text-xs font-medium text-center leading-tight ${match.awayTeam.id === teamId ? "text-blue-700 font-bold" : "text-gray-700"}`}>
+              {match.awayTeam.nameKo ?? match.awayTeam.name}
+            </span>
+            <span className="text-[10px] text-gray-400">원정</span>
+          </div>
+        </div>
+
+        {/* 경기장 */}
+        {(match.venue?.name || match.venue?.city) && (
+          <div className="flex items-center gap-1.5 px-4 pb-3">
+            <svg className="w-3 h-3 text-gray-300 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+            </svg>
+            <span className="text-xs text-gray-400 truncate">
+              {[match.venue.name, match.venue.city].filter(Boolean).join(", ")}
+            </span>
+          </div>
+        )}
+      </div>
+    </Link>
+  );
+}
 
 function PlayerCard({ player, teamId }: { player: Player; teamId: number }) {
   return (
@@ -47,43 +137,6 @@ function CoachCard({ coach }: { coach: Coach }) {
   );
 }
 
-function MatchRow({ match, teamId }: { match: Match; teamId: number }) {
-  const isHome = match.homeTeam.id === teamId;
-  const opponent = isHome ? match.awayTeam : match.homeTeam;
-  const koScore = match.score.home !== null
-    ? `${match.score.home} : ${match.score.away}`
-    : "-";
-  const date = new Date(match.date);
-  const isFinished = ["FT", "AET", "PEN"].includes(match.status.short);
-  const won = isHome ? match.homeTeam.winner : match.awayTeam.winner;
-
-  return (
-    <Link href={`/matches/${match.id}`}>
-      <div className="flex items-center justify-between p-3 bg-white rounded-xl border border-gray-100 hover:border-blue-200 hover:shadow-sm transition-all">
-        <div className="flex items-center gap-3 min-w-0">
-          <Image src={opponent.logo} alt={opponent.name} width={28} height={28} unoptimized />
-          <div className="min-w-0">
-            <p className="text-sm font-medium text-gray-800 truncate">
-              {isHome ? "홈" : "원정"} · {opponent.name}
-            </p>
-            <p className="text-xs text-gray-400">{match.league.nameKo ?? match.league.name}</p>
-          </div>
-        </div>
-        <div className="text-right flex-shrink-0 ml-3">
-          {isFinished ? (
-            <span className={`text-sm font-bold ${won === true ? "text-blue-600" : won === false ? "text-red-500" : "text-gray-600"}`}>
-              {koScore}
-            </span>
-          ) : (
-            <span className="text-xs text-gray-500">{match.status.longKo}</span>
-          )}
-          <p className="text-xs text-gray-400">{date.toLocaleDateString("ko-KR", { month: "short", day: "numeric" })}</p>
-        </div>
-      </div>
-    </Link>
-  );
-}
-
 export default async function TeamPage({ params }: { params: Promise<{ teamId: string }> }) {
   const { teamId } = await params;
   const id = Number(teamId);
@@ -96,15 +149,16 @@ export default async function TeamPage({ params }: { params: Promise<{ teamId: s
     getHighlights(team.highlightQuery, 12),
   ]);
 
-  const upcoming = fixtures
-    .filter((m) => !["FT", "AET", "PEN"].includes(m.status.short))
-    .sort((a, b) => a.timestamp - b.timestamp)
+  // 최근 완료 경기 5개 (최신순)
+  const recentResults = fixtures
+    .filter((m) => FINISHED.includes(m.status.short))
+    .sort((a, b) => b.timestamp - a.timestamp)
     .slice(0, 5);
 
-  const results = fixtures
-    .filter((m) => ["FT", "AET", "PEN"].includes(m.status.short))
-    .sort((a, b) => b.timestamp - a.timestamp)
-    .slice(0, 10);
+  // 예정 경기 전체 (가장 빠른 순)
+  const upcomingMatches = fixtures
+    .filter((m) => !FINISHED.includes(m.status.short))
+    .sort((a, b) => a.timestamp - b.timestamp);
 
   const byPosition: Record<string, Player[]> = {};
   players.forEach((p) => {
@@ -132,55 +186,51 @@ export default async function TeamPage({ params }: { params: Promise<{ teamId: s
       </div>
 
       <div className="max-w-3xl mx-auto px-4 py-8 space-y-8">
-        {/* 코칭스태프 */}
-        {coaches.length > 0 && (
-          <section>
-            <h2 className="text-base font-bold text-gray-800 mb-3">코칭스태프</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {coaches.map((c) => <CoachCard key={c.id} coach={c} />)}
-            </div>
-          </section>
-        )}
 
-        {/* 선수 명단 */}
+        {/* ① 최근 경기 5개 */}
         <section>
-          <h2 className="text-base font-bold text-gray-800 mb-3">선수 명단 ({players.length}명)</h2>
-          {posOrder.map((pos) =>
-            byPosition[pos] ? (
-              <div key={pos} className="mb-4">
-                <h3 className="text-xs font-semibold text-gray-500 uppercase mb-2">{pos}</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {byPosition[pos].map((p) => <PlayerCard key={p.id} player={p} teamId={id} />)}
-                </div>
-              </div>
-            ) : null
+          <h2 className="text-base font-bold text-gray-800 mb-3 flex items-center gap-2">
+            <span className="w-1 h-5 bg-blue-500 rounded-full inline-block" />
+            최근 경기
+          </h2>
+          {recentResults.length > 0 ? (
+            <div className="space-y-3">
+              {recentResults.map((m) => (
+                <MatchCard key={m.id} match={m} teamId={id} />
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-gray-400 py-4 text-center">경기 기록이 없습니다</p>
           )}
         </section>
 
-        {/* 예정 경기 */}
-        {upcoming.length > 0 && (
-          <section>
-            <h2 className="text-base font-bold text-gray-800 mb-3">예정 경기</h2>
-            <div className="space-y-2">
-              {upcoming.map((m) => <MatchRow key={m.id} match={m} teamId={id} />)}
+        {/* ② 예정 경기 */}
+        <section>
+          <h2 className="text-base font-bold text-gray-800 mb-3 flex items-center gap-2">
+            <span className="w-1 h-5 bg-green-500 rounded-full inline-block" />
+            예정 경기
+          </h2>
+          {upcomingMatches.length > 0 ? (
+            <div className="space-y-3">
+              {upcomingMatches.map((m) => (
+                <MatchCard key={m.id} match={m} teamId={id} />
+              ))}
             </div>
-          </section>
-        )}
-
-        {/* 최근 결과 */}
-        {results.length > 0 && (
-          <section>
-            <h2 className="text-base font-bold text-gray-800 mb-3">최근 경기 결과</h2>
-            <div className="space-y-2">
-              {results.map((m) => <MatchRow key={m.id} match={m} teamId={id} />)}
+          ) : (
+            <div className="bg-white rounded-2xl border border-gray-100 px-4 py-6 text-center">
+              <p className="text-sm text-gray-400">확정된 예정 경기가 없습니다</p>
+              <p className="text-xs text-gray-300 mt-1">미정</p>
             </div>
-          </section>
-        )}
+          )}
+        </section>
 
-        {/* 하이라이트 영상 */}
+        {/* ③ 하이라이트 영상 */}
         {highlights.length > 0 && (
           <section>
-            <h2 className="text-base font-bold text-gray-800 mb-3">🎬 하이라이트 영상</h2>
+            <h2 className="text-base font-bold text-gray-800 mb-3 flex items-center gap-2">
+              <span className="w-1 h-5 bg-red-500 rounded-full inline-block" />
+              🎬 하이라이트 영상
+            </h2>
             <div className="grid grid-cols-2 gap-3">
               {highlights.map((h) => (
                 <a
@@ -215,6 +265,37 @@ export default async function TeamPage({ params }: { params: Promise<{ teamId: s
             </div>
           </section>
         )}
+
+        {/* ④ 선수단 */}
+        <section>
+          <h2 className="text-base font-bold text-gray-800 mb-3 flex items-center gap-2">
+            <span className="w-1 h-5 bg-gray-400 rounded-full inline-block" />
+            선수단 ({players.length}명)
+          </h2>
+
+          {/* 코칭스태프 */}
+          {coaches.length > 0 && (
+            <div className="mb-5">
+              <h3 className="text-xs font-semibold text-gray-500 uppercase mb-2">코칭스태프</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {coaches.map((c) => <CoachCard key={c.id} coach={c} />)}
+              </div>
+            </div>
+          )}
+
+          {/* 포지션별 선수 */}
+          {posOrder.map((pos) =>
+            byPosition[pos] ? (
+              <div key={pos} className="mb-4">
+                <h3 className="text-xs font-semibold text-gray-500 uppercase mb-2">{pos}</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {byPosition[pos].map((p) => <PlayerCard key={p.id} player={p} teamId={id} />)}
+                </div>
+              </div>
+            ) : null
+          )}
+        </section>
+
       </div>
     </main>
   );
